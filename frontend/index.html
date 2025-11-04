@@ -1,36 +1,895 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Analytics customizável para restaurantes - Dashboard de insights e métricas operacionais" />
-    <title>Restaurante Analytics - Dashboard</title>
-    <link rel="stylesheet" href="./src/styles.css" />
-  </head>
-  <body>
-    <header class="app-header">
-      <div class="container">
-        <h1>🍔 Restaurante Analytics</h1>
-        <nav>
-          <a href="#home">Dashboard</a>
-        </nav>
-      </div>
-    </header>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Vendas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color) 0%, #1a2530 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+        }
+        
+        .sidebar .nav-link {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .stat-card i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .stat-card .label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .bg-sales {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .bg-revenue {
+            background: linear-gradient(45deg, #27ae60, #219653);
+            color: white;
+        }
+        
+        .bg-customers {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+        }
+        
+        .bg-orders {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+        
+        .tab-content {
+            padding: 20px 0;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .page-title {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky">
+                    <div class="text-center mb-4">
+                        <h4>Dashboard Vendas</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#vendas" data-bs-toggle="tab">
+                                <i class="fas fa-shopping-cart"></i> Vendas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#produtos" data-bs-toggle="tab">
+                                <i class="fas fa-box"></i> Produtos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#clientes" data-bs-toggle="tab">
+                                <i class="fas fa-users"></i> Clientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#relatorios" data-bs-toggle="tab">
+                                <i class="fas fa-chart-bar"></i> Relatórios
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#configuracoes" data-bs-toggle="tab">
+                                <i class="fas fa-cog"></i> Configurações
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
 
-    <main>
-      <section id="home" class="section">
-        <div id="app" class="container" style="padding: 24px 16px"></div>
-      </section>
-    </main>
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                <nav class="navbar navbar-expand-lg navbar-light">
+                    <div class="container-fluid">
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav ms-auto">
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-user-circle"></i> Admin
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Perfil</a></li>
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configurações</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>Sair</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
 
-    <footer class="app-footer">
-      <div class="container">
-        <p>© <span id="year"></span> Restaurante Analytics</p>
-      </div>
-    </footer>
+                <div class="tab-content">
+                    <!-- Dashboard Tab -->
+                    <div class="tab-pane fade show active" id="dashboard">
+                        <h2 class="page-title">Dashboard Geral</h2>
+                        
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="card bg-sales text-white stat-card">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    <div class="value">1,248</div>
+                                    <div class="label">Vendas Hoje</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-revenue text-white stat-card">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    <div class="value">R$ 42,580</div>
+                                    <div class="label">Receita Total</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-customers text-white stat-card">
+                                    <i class="fas fa-users"></i>
+                                    <div class="value">3,842</div>
+                                    <div class="label">Novos Clientes</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-orders text-white stat-card">
+                                    <i class="fas fa-chart-line"></i>
+                                    <div class="value">28.5%</div>
+                                    <div class="label">Crescimento</div>
+                                </div>
+                            </div>
+                        </div>
 
-    <script type="module" src="./src/app.js"></script>
-  </body>
-  </html>
+                        <div class="row mt-4">
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Vendas por Mês</h5>
+                                        <div class="chart-container">
+                                            <canvas id="salesChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Categorias Mais Vendidas</h5>
+                                        <div class="chart-container">
+                                            <canvas id="categoryChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Vendas Recentes</h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Cliente</th>
+                                                        <th>Produto</th>
+                                                        <th>Valor</th>
+                                                        <th>Data</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>#001</td>
+                                                        <td>João Silva</td>
+                                                        <td>iPhone 13</td>
+                                                        <td>R$ 4.999</td>
+                                                        <td>10/11/2023</td>
+                                                        <td><span class="badge bg-success">Concluído</span></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>#002</td>
+                                                        <td>Maria Santos</td>
+                                                        <td>Samsung Galaxy</td>
+                                                        <td>R$ 3.499</td>
+                                                        <td>10/11/2023</td>
+                                                        <td><span class="badge bg-warning">Pendente</span></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>#003</td>
+                                                        <td>Pedro Costa</td>
+                                                        <td>Notebook Dell</td>
+                                                        <td>R$ 2.899</td>
+                                                        <td>09/11/2023</td>
+                                                        <td><span class="badge bg-success">Concluído</span></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- Vendas Tab -->
+                    <div class="tab-pane fade" id="vendas">
+                        <h2 class="page-title">Gestão de Vendas</h2>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Buscar vendas...">
+                                    <button class="btn btn-primary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-success">
+                                    <i class="fas fa-plus me-2"></i>Nova Venda
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID Venda</th>
+                                        <th>Cliente</th>
+                                        <th>Valor Total</th>
+                                        <th>Data</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>V001</td>
+                                        <td>João Silva</td>
+                                        <td>R$ 1.250,00</td>
+                                        <td>10/11/2023</td>
+                                        <td><span class="badge bg-success">Concluída</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>V002</td>
+                                        <td>Maria Santos</td>
+                                        <td>R$ 899,90</td>
+                                        <td>09/11/2023</td>
+                                        <td><span class="badge bg-warning">Pendente</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Produtos Tab -->
+                    <div class="tab-pane fade" id="produtos">
+                        <h2 class="page-title">Gestão de Produtos</h2>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-boxes fa-3x text-primary mb-3"></i>
+                                        <h3>156</h3>
+                                        <p class="text-muted">Produtos Cadastrados</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                                        <h3>12</h3>
+                                        <p class="text-muted">Produtos com Estoque Baixo</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                                        <h3>3</h3>
+                                        <p class="text-muted">Produtos sem Estoque</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-container mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5>Lista de Produtos</h5>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Adicionar Produto
+                                </button>
+                            </div>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Produto</th>
+                                        <th>Categoria</th>
+                                        <th>Preço</th>
+                                        <th>Estoque</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>P001</td>
+                                        <td>iPhone 13</td>
+                                        <td>Celulares</td>
+                                        <td>R$ 4.999</td>
+                                        <td>45</td>
+                                        <td><span class="badge bg-success">Disponível</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>P002</td>
+                                        <td>Samsung Galaxy S21</td>
+                                        <td>Celulares</td>
+                                        <td>R$ 3.499</td>
+                                        <td>8</td>
+                                        <td><span class="badge bg-warning">Estoque Baixo</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Clientes Tab -->
+                    <div class="tab-pane fade" id="clientes">
+                        <h2 class="page-title">Gestão de Clientes</h2>
+                        
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                                        <h3>1,248</h3>
+                                        <p class="text-muted">Total de Clientes</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-plus fa-3x text-success mb-3"></i>
+                                        <h3>84</h3>
+                                        <p class="text-muted">Novos Este Mês</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-star fa-3x text-warning mb-3"></i>
+                                        <h3>256</h3>
+                                        <p class="text-muted">Clientes VIP</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                                        <h3>15.2%</h3>
+                                        <p class="text-muted">Crescimento</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-container mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5>Lista de Clientes</h5>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Adicionar Cliente
+                                </button>
+                            </div>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Email</th>
+                                        <th>Telefone</th>
+                                        <th>Data Cadastro</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>C001</td>
+                                        <td>João Silva</td>
+                                        <td>joao@email.com</td>
+                                        <td>(11) 99999-9999</td>
+                                        <td>15/10/2023</td>
+                                        <td><span class="badge bg-success">Ativo</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>C002</td>
+                                        <td>Maria Santos</td>
+                                        <td>maria@email.com</td>
+                                        <td>(11) 98888-8888</td>
+                                        <td>20/10/2023</td>
+                                        <td><span class="badge bg-success">Ativo</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Relatórios Tab -->
+                    <!-- Relatórios Tab - MODIFICADO -->
+<div class="tab-pane fade" id="relatorios">
+    <h2 class="page-title">Analytics Avançado</h2>
+    
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Filtros de Análise</h5>
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">Período</label>
+                    <select class="form-select" id="periodoFilter">
+                        <option value="hoje">Hoje</option>
+                        <option value="semana">Esta Semana</option>
+                        <option value="mes" selected>Este Mês</option>
+                        <option value="trimestre">Este Trimestre</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Canal</label>
+                    <select class="form-select" id="canalFilter">
+                        <option value="todos">Todos os Canais</option>
+                        <option value="ifood">iFood</option>
+                        <option value="site">Site Próprio</option>
+                        <option value="app">App Mobile</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Loja</label>
+                    <select class="form-select" id="lojaFilter">
+                        <option value="todas">Todas as Lojas</option>
+                        <option value="centro">Centro</option>
+                        <option value="zona-sul">Zona Sul</option>
+                        <option value="shopping">Shopping</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Horário</label>
+                    <select class="form-select" id="horarioFilter">
+                        <option value="todos">Todos Horários</option>
+                        <option value="manha">Manhã (6h-12h)</option>
+                        <option value="tarde">Tarde (12h-18h)</option>
+                        <option value="noite">Noite (18h-24h)</option>
+                        <option value="madrugada">Madrugada (0h-6h)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12 text-end">
+                    <button class="btn btn-primary" onclick="atualizarAnalytics()">
+                        <i class="fas fa-sync-alt me-2"></i>Atualizar Análise
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Respostas às Perguntas Específicas -->
+    <div class="row">
+        <!-- Produtos por Horário -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-utensils me-2"></i>
+                        Top Produtos - Quinta à Noite (iFood)
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="produtosNoiteChart"></canvas>
+                    </div>
+                    <div class="mt-3" id="insightsProdutosNoite">
+                        <div class="alert alert-info">
+                            <strong>Insight:</strong> Hambúrguer Artesanal representa 35% das vendas de quinta à noite
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ticket Médio -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Análise do Ticket Médio
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="ticketMedioChart"></canvas>
+                    </div>
+                    <div class="mt-3" id="insightsTicketMedio">
+                        <div class="alert alert-warning">
+                            <strong>Alerta:</strong> Ticket médio caiu 15% no iFood vs 5% no site
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Margem por Produto -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-money-bill-wave me-2"></i>
+                        Margem por Produto (Menores Margens)
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="margemProdutoChart"></canvas>
+                    </div>
+                    <div class="mt-3" id="insightsMargem">
+                        <div class="alert alert-danger">
+                            <strong>Ação Necessária:</strong> Refrigerante tem margem de apenas 8%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tempo de Entrega -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-clock me-2"></i>
+                        Performance de Entrega
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="tempoEntregaChart"></canvas>
+                    </div>
+                    <div class="mt-3" id="insightsEntrega">
+                        <div class="alert alert-warning">
+                            <strong>Problema:</strong> Sexta-feira 19h-21h: tempo aumentou 40%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Clientes Inativos -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-user-clock me-2"></i>
+                        Clientes Recorrentes Inativos (3+ compras, 30+ dias sem comprar)
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Total de Compras</th>
+                                    <th>Última Compra</th>
+                                    <th>Ticket Médio</th>
+                                    <th>Canal Preferido</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaClientesInativos">
+                                <tr>
+                                    <td>João Silva</td>
+                                    <td>5</td>
+                                    <td>45 dias</td>
+                                    <td>R$ 85,00</td>
+                                    <td><span class="badge bg-warning">iFood</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success">Reativar</button>
+                                        <button class="btn btn-sm btn-primary">Contatar</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Maria Santos</td>
+                                    <td>7</td>
+                                    <td>38 dias</td>
+                                    <td>R$ 120,00</td>
+                                    <td><span class="badge bg-info">Site</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success">Reativar</button>
+                                        <button class="btn btn-sm btn-primary">Contatar</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+                    <!-- Configurações Tab -->
+                    <div class="tab-pane fade" id="configuracoes">
+                        <h2 class="page-title">Configurações do Sistema</h2>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Configurações Gerais</h5>
+                                        <form>
+                                            <div class="mb-3">
+                                                <label class="form-label">Nome da Empresa</label>
+                                                <input type="text" class="form-control" value="Minha Loja Online">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Email de Contato</label>
+                                                <input type="email" class="form-control" value="contato@minhaloja.com">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Moeda</label>
+                                                <select class="form-select">
+                                                    <option selected>Real Brasileiro (R$)</option>
+                                                    <option>Dólar Americano ($)</option>
+                                                    <option>Euro (€)</option>
+                                                </select>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Salvar Configurações</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Preferências de Notificação</h5>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                            <label class="form-check-label">Notificações por Email</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                            <label class="form-check-label">Alertas de Estoque Baixo</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox">
+                                            <label class="form-check-label">Relatórios Semanais</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Backup do Sistema</h5>
+                                        <p>Último backup: 09/11/2023 14:30</p>
+                                        <button class="btn btn-warning">
+                                            <i class="fas fa-download me-2"></i>Fazer Backup Agora
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Inicialização dos gráficos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gráfico de Vendas
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            const salesChart = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    datasets: [{
+                        label: 'Vendas (R$)',
+                        data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 32000, 40000, 38000, 45000],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Gráfico de Categorias
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            const categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Eletrônicos', 'Roupas', 'Casa', 'Esportes', 'Livros'],
+                    datasets: [{
+                        data: [35, 25, 20, 15, 5],
+                        backgroundColor: [
+                            '#3498db',
+                            '#2ecc71',
+                            '#e74c3c',
+                            '#f39c12',
+                            '#9b59b6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Gráfico de Performance
+            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+            const performanceChart = new Chart(performanceCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov'],
+                    datasets: [{
+                        label: 'Vendas',
+                        data: [30000, 35000, 32000, 40000, 38000, 42000],
+                        backgroundColor: '#3498db'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Navegação entre abas
+            const triggerTabList = [].slice.call(document.querySelectorAll('a[data-bs-toggle="tab"]'));
+            triggerTabList.forEach(function (triggerEl) {
+                const tabTrigger = new bootstrap.Tab(triggerEl);
+                triggerEl.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    tabTrigger.show();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

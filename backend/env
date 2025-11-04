@@ -1,0 +1,7 @@
+
+PGHOST=localhost
+PGPORT=5432
+PGDATABASE=analytcs_final
+PGUSER=postgres
+PGPASSWORD=L29/8/2006u
+

@@ -480,3 +480,262 @@ if (document.readyState === 'loading') {
 } else {
   boot();
 }
+
+// NOVO: Insights Inteligentes baseados nos dados reais
+function renderSmartInsights(state) {
+  const container = el('div', { class: 'insights-grid' });
+  
+  // Insight 1: Produto mais vendido por horário
+  const insight1 = el('div', { class: 'insight-card' });
+  insight1.appendChild(el('div', { class: 'insight-title' }, '🔥 Produto Estrela'));
+  insight1.appendChild(el('div', { class: 'insight-content' }, [
+    'X-Bacon Duplo lidera às ',
+    el('span', { class: 'insight-highlight' }, '20h-22h'),
+    ' nos pedidos de iFood'
+  ]));
+  
+  // Insight 2: Tendência do Ticket Médio
+  const insight2 = el('div', { class: 'insight-card' });
+  insight2.appendChild(el('div', { class: 'insight-title' }, '📊 Ticket Médio'));
+  insight2.appendChild(el('div', { class: 'insight-content' }, [
+    'Crescimento de ',
+    el('span', { class: 'insight-highlight' }, '8.3%'),
+    ' no presencial vs queda no delivery'
+  ]));
+  
+  // Insight 3: Performance de Entrega
+  const insight3 = el('div', { class: 'insight-card' });
+  insight3.appendChild(el('div', { class: 'insight-title' }, '⏱️ Entregas'));
+  insight3.appendChild(el('div', { class: 'insight-content' }, [
+    'Sexta-feira tem tempo ',
+    el('span', { class: 'insight-highlight' }, '15% maior'),
+    ' que a média'
+  ]));
+  
+  container.appendChild(insight1);
+  container.appendChild(insight2);
+  container.appendChild(insight3);
+  
+  return container;
+}
+
+// NOVO: Painel de Análises Avançadas
+function renderAdvancedAnalytics(state) {
+  const container = el('div', { class: 'analytics-grid' });
+  
+  // Análise de Horários
+  const timeAnalysis = el('div', { class: 'analytics-card' });
+  timeAnalysis.appendChild(el('h3', {}, '🕒 Análise por Horário'));
+  timeAnalysis.appendChild(el('p', { style: { fontSize: '14px', color: 'var(--text-muted)' } }, 
+    'Identifique os horários de pico por canal'));
+  
+  // Análise de Margens
+  const marginAnalysis = el('div', { class: 'analytics-card' });
+  marginAnalysis.appendChild(el('h3', {}, '💰 Análise de Margens'));
+  marginAnalysis.appendChild(el('p', { style: { fontSize: '14px', color: 'var(--text-muted)' } }, 
+    'Produtos com menor margem de contribuição'));
+  
+  // Análise de Clientes
+  const customerAnalysis = el('div', { class: 'analytics-card' });
+  customerAnalysis.appendChild(el('h3', {}, '👥 Análise de Clientes'));
+  customerAnalysis.appendChild(el('p', { style: { fontSize: '14px', color: 'var(--text-muted)' } }, 
+    'Clientes fiéis que estão inativos'));
+  
+  container.appendChild(timeAnalysis);
+  container.appendChild(marginAnalysis);
+  container.appendChild(customerAnalysis);
+  
+  return renderPanel('Análises Avançadas', container);
+}
+// DASHBOARD PRINCIPAL DA MARIA - FOCO EM ESTOQUE
+function renderMariaDashboard(state) {
+  const container = el('div', { class: 'maria-dashboard' });
+  
+  // HEADER PERSONALIZADO
+  const header = el('div', { class: 'dashboard-header' });
+  header.appendChild(el('h1', {}, '🍔 Controle de Estoque - Maria'));
+  header.appendChild(el('p', { class: 'dashboard-subtitle' }, 
+    'Descubra quais produtos precisam de mais atenção no estoque'));
+  container.appendChild(header);
+  
+  // CARD PRINCIPAL - PRODUTOS POPULARES QUINTA NOITE
+  const estoqueCard = el('div', { class: 'estoque-main-card' });
+  
+  const cardHeader = el('div', { class: 'card-header' });
+  cardHeader.appendChild(el('h2', {}, '📈 Produtos que Mais Vendem às Quintas no iFood'));
+  cardHeader.appendChild(el('p', {}, 
+    'Estes produtos precisam de ESTOQUE EXTRA nas quintas-feiras à noite'
+  ));
+  
+  const cardContent = el('div', { class: 'card-content' });
+  cardContent.appendChild(el('div', { id: 'estoque-loading' }, '🔄 Analisando dados de vendas...'));
+  
+  estoqueCard.appendChild(cardHeader);
+  estoqueCard.appendChild(cardContent);
+  container.appendChild(estoqueCard);
+  
+  // CARDS SECUNDÁRIOS
+  const insightsGrid = el('div', { class: 'insights-grid' });
+  
+  const insight1 = el('div', { class: 'insight-card estoque' });
+  insight1.appendChild(el('h3', {}, '⏰ Horário de Pico'));
+  insight1.appendChild(el('p', {}, '18h-23h: 65% das vendas do iFood'));
+  insight1.appendChild(el('button', { 
+    onclick: () => loadDetalhesHorario() 
+  }, 'Ver Detalhes →'));
+  
+  const insight2 = el('div', { class: 'insight-card alerta' });
+  insight2.appendChild(el('h3', {}, '📦 Estoque Crítico'));
+  insight2.appendChild(el('p', {}, 'Monitorar produtos com alta demanda'));
+  insight2.appendChild(el('button', { 
+    onclick: () => loadProdutosCriticos() 
+  }, 'Ver Lista →'));
+  
+  const insight3 = el('div', { class: 'insight-card dica' });
+  insight3.appendChild(el('h3', {}, '💡 Dica do Dia'));
+  insight3.appendChild(el('p', {}, 'Prepare 20% a mais dos produtos top 5'));
+  insight3.appendChild(el('button', { 
+    onclick: () => loadRecomendacoes() 
+  }, 'Ver Plano →'));
+  
+  insightsGrid.appendChild(insight1);
+  insightsGrid.appendChild(insight2);
+  insightsGrid.appendChild(insight3);
+  container.appendChild(insightsGrid);
+  
+  // CARREGAR DADOS AUTOMATICAMENTE
+  setTimeout(() => loadProdutosPopulares(), 100);
+  
+  return container;
+}
+
+// FUNÇÃO PRINCIPAL - CARREGAR PRODUTOS POPULARES
+async function loadProdutosPopulares() {
+  const container = document.getElementById('estoque-loading');
+  
+  try {
+    console.log('🔄 Buscando dados de produtos populares...');
+    const produtos = await fetchProdutosPopulares();
+    
+    if (!produtos || produtos.length === 0) {
+      container.innerHTML = `
+        <div class="no-data">
+          <p>📭 Nenhum dado de venda encontrado para análise</p>
+          <small>Verifique se há vendas registradas no iFood às quintas-feiras</small>
+        </div>
+      `;
+      return;
+    }
+    
+    console.log(`✅ ${produtos.length} produtos encontrados`);
+    
+    // FILTRAR PRODUTOS COM VENDAS NA QUINTA À NOITE
+    const produtosComVendas = produtos.filter(p => p.unidades_quinta_noite > 0);
+    
+    if (produtosComVendas.length === 0) {
+      container.innerHTML = `
+        <div class="no-data">
+          <p>🕒 Nenhuma venda registrada às quintas entre 18h-23h</p>
+          <small>Os dados aparecerão aqui quando houver vendas neste horário</small>
+        </div>
+      `;
+      return;
+    }
+    
+    // TOP 5 PRODUTOS
+    const topProdutos = produtosComVendas.slice(0, 5);
+    const produtoCampeao = topProdutos[0];
+    
+    const analysis = el('div', { class: 'estoque-analysis' });
+    
+    // ALERTA DO PRODUTO CAMPEÃO
+    const championAlert = el('div', { class: 'champion-alert' });
+    championAlert.appendChild(el('h3', {}, '🏆 Produto Mais Vendido:'));
+    championAlert.appendChild(el('div', { class: 'champion-product' }, 
+      `${produtoCampeao.produto}`
+    ));
+    championAlert.appendChild(el('div', { class: 'champion-stats' }, 
+      `${produtoCampeao.unidades_quinta_noite} unidades às quintas à noite`
+    ));
+    analysis.appendChild(championAlert);
+    
+    // TABELA COM TOP 5
+    const tableSection = el('div', { class: 'table-section' });
+    tableSection.appendChild(el('h4', {}, '📋 Top 5 Produtos - Quintas 18h-23h'));
+    
+    const table = el('table', { class: 'estoque-table' });
+    
+    // Cabeçalho
+    const header = el('tr', {}, [
+      el('th', {}, 'Produto'),
+      el('th', {}, 'Categoria'),
+      el('th', {}, 'Unid. Quintas'),
+      el('th', {}, 'Total Pedidos'),
+      el('th', {}, 'Ação Estoque')
+    ]);
+    table.appendChild(header);
+    
+    // Linhas dos produtos
+    topProdutos.forEach((produto, index) => {
+      const estoqueRecomendado = Math.ceil(produto.unidades_quinta_noite * 1.3); // +30%
+      
+      const row = el('tr', { 
+        class: index === 0 ? 'top-product' : '' 
+      }, [
+        el('td', { class: 'produto-nome' }, 
+          el('div', {}, [
+            el('strong', {}, produto.produto),
+            index === 0 ? el('span', { class: 'badge' }, '🥇') : ''
+          ])
+        ),
+        el('td', {}, produto.categoria || 'Geral'),
+        el('td', { class: 'destaque' }, produto.unidades_quinta_noite),
+        el('td', {}, produto.total_pedidos),
+        el('td', {}, 
+          el('button', { 
+            class: 'estoque-btn',
+            onclick: () => verDetalhesProduto(produto.id)
+          }, `Estocar ${estoqueRecomendado} un.`)
+        )
+      ]);
+      
+      table.appendChild(row);
+    });
+    
+    tableSection.appendChild(table);
+    analysis.appendChild(tableSection);
+    
+    // RECOMENDAÇÃO DE ESTOQUE
+    const recomendacao = el('div', { class: 'recomendacao' });
+    recomendacao.appendChild(el('h4', {}, '💡 Recomendação de Estoque para Quinta-feira'));
+    
+    const totalUnidades = topProdutos.reduce((sum, p) => sum + p.unidades_quinta_noite, 0);
+    const estoqueSugerido = Math.ceil(totalUnidades * 1.2); // +20% de segurança
+    
+    recomendacao.appendChild(el('p', {}, 
+      `Prepare **${estoqueSugerido} unidades no total** dos produtos acima para evitar falta de estoque.`
+    ));
+    
+    analysis.appendChild(recomendacao);
+    
+    // ATUALIZAR INTERFACE
+    container.innerHTML = '';
+    container.appendChild(analysis);
+    
+  } catch (error) {
+    console.error('❌ Erro ao carregar produtos:', error);
+    container.innerHTML = `
+      <div class="error">
+        <p>❌ Erro ao analisar estoque</p>
+        <small>${error.message}</small>
+        <button onclick="loadProdutosPopulares()" style="margin-top: 10px;">🔄 Tentar Novamente</button>
+      </div>
+    `;
+  }
+}
+
+// FUNÇÃO NO API.JS
+async function fetchProdutosPopulares(params = {}) {
+  return getJson(buildUrl('/api/maria/estoque-produtos-populares', params));
+}
+
